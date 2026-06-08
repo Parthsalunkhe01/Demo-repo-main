@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Dashboard - Public Issue Reporting</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined" rel="stylesheet">
+</head>
+
+<body>
+    <header class="top-app-bar">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <span class="material-symbols-outlined"
+                style="color: var(--md-sys-color-primary); font-size: 32px;">analytics</span>
+            <h1 data-i18n="data_nav">Data</h1>
+        </div>
+        <div class="app-bar-actions">
+            <select id="language-select">
+                <option value="en">English</option>
+                <option value="mr">मराठी</option>
+            </select>
+        </div>
+    </header>
+
+    <main class="container">
+        <section style="text-align: center; margin-bottom: 24px;">
+            <h2 style="margin-bottom: 8px;" data-i18n="abs">Public Issue Analytics</h2>
+            <p class="body-large" style="color: var(--md-sys-color-on-surface-variant);"
+                data-i18n="analytics_subtitle">Live overview of all complaints reported in Lonere Grampanchayat.</p>
+        </section>
+
+        <!-- Total Complaints Stats -->
+        <section class="grid-2" style="margin-bottom: 24px;">
+            <div class="md-card" style="text-align: center; justify-content: center; padding: 24px;">
+                <h3 style="color: var(--md-sys-color-primary); font-size: 3rem; margin-bottom: 8px;" id="stat-total">0
+                </h3>
+                <p class="body-large" style="font-weight: 500;" data-i18n="total_complaints">Total Complaints Raised</p>
+            </div>
+            <div class="md-card" style="display: flex; flex-direction: column; justify-content: center; gap: 16px;">
+                <div
+                    style="display: flex; justify-content: space-between; padding-bottom: 8px; border-bottom: 1px solid var(--md-sys-color-outline-variant); color: #E65100;">
+                    <span data-i18n="status_pending">Pending</span> <strong id="stat-pending">0</strong>
+                </div>
+                <div
+                    style="display: flex; justify-content: space-between; padding-bottom: 8px; border-bottom: 1px solid var(--md-sys-color-outline-variant); color: #1565C0;">
+                    <span data-i18n="status_in_progress">In Progress</span> <strong id="stat-inprogress">0</strong>
+                </div>
+                <div
+                    style="display: flex; justify-content: space-between; padding-bottom: 8px; border-bottom: 1px solid var(--md-sys-color-outline-variant); color: #2E7D32;">
+                    <span data-i18n="status_completed">Completed</span> <strong id="stat-completed">0</strong>
+                </div>
+                <div
+                    style="display: flex; justify-content: space-between; padding-bottom: 8px; border-bottom: 1px solid var(--md-sys-color-outline-variant); color: #C62828;">
+                    <span data-i18n="status_rejected">Rejected</span> <strong id="stat-rejected">0</strong>
+                </div>
+            </div>
+        </section>
+
+        <!-- Charts -->
+        <section class="grid-2" style="margin-bottom: 24px;">
+            <div class="md-card">
+                <h3 style="margin-bottom: 16px; text-align: center;" data-i18n="chart_status">Status Overview</h3>
+                <canvas id="statusChart"></canvas>
+            </div>
+            <div class="md-card">
+                <h3 style="margin-bottom: 16px; text-align: center;" data-i18n="chart_category">Issues by Category</h3>
+                <canvas id="categoryChart"></canvas>
+            </div>
+        </section>
+    </main>
+
+    <!-- Mobile Bottom Navigation -->
+    <nav class="bottom-nav">
+        <a href="index.html" class="nav-item">
+            <div class="icon-container"><span class="material-symbols-outlined">home</span></div>
+            <span data-i18n="home">Home</span>
+        </a>
+        <a href="complaint.html" class="nav-item">
+            <div class="icon-container"><span class="material-symbols-outlined">report</span></div>
+            <span data-i18n="complaint_nav">Complaint</span>
+        </a>
+        <a href="announcements.html" class="nav-item">
+            <div class="icon-container"><span class="material-symbols-outlined">campaign</span></div>
+            <span data-i18n="explore_nav">Announcement</span>
+        </a>
+        <a href="data.html" class="nav-item active">
+            <div class="icon-container"><span class="material-symbols-outlined">analytics</span></div>
+            <span data-i18n="data_nav">Data</span>
+        </a>
+    </nav>
+
+    <script src="js/i18n.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        const response = await fetch('/api/complaints/all');
+        const data = await response.json();
+
+        console.log("API RESPONSE:", data);
+
+        // ✅ SAFE EXTRACTION
+        let complaints = [];
+
+        if (Array.isArray(data)) {
+            complaints = data;
+        } else if (Array.isArray(data.data)) {
+            complaints = data.data;
+        } else if (Array.isArray(data.complaints)) {
+            complaints = data.complaints;
+        } else {
+            console.warn("No complaints array found, using empty array");
+            complaints = []; // fallback
+        }
+
+        let pending = 0, inprogress = 0, completed = 0, rejected = 0;
+        let categories = {};
+
+        complaints.forEach(c => {
+            if (c.status === 'Pending') pending++;
+            if (c.status === 'In Progress') inprogress++;
+            if (c.status === 'Completed') completed++;
+            if (c.status === 'Rejected') rejected++;
+
+            categories[c.category] = (categories[c.category] || 0) + 1;
+        });
+
+        document.getElementById('stat-total').textContent = complaints.length;
+        document.getElementById('stat-pending').textContent = pending;
+        document.getElementById('stat-inprogress').textContent = inprogress;
+        document.getElementById('stat-completed').textContent = completed;
+        document.getElementById('stat-rejected').textContent = rejected;
+
+        // ✅ STATUS CHART
+        new Chart(document.getElementById('statusChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Pending', 'In Progress', 'Completed', 'Rejected'],
+                datasets: [{
+                    data: [pending, inprogress, completed, rejected]
+                }]
+            }
+        });
+
+        // ✅ CATEGORY CHART
+        new Chart(document.getElementById('categoryChart'), {
+            type: 'bar',
+            data: {
+                labels: Object.keys(categories),
+                datasets: [{
+                    label: 'Complaints',
+                    data: Object.values(categories)
+                }]
+            }
+        });
+
+    } catch (error) {
+        console.error('Failed to load data', error);
+    }
+});
+    </script>
+</body>
+
+</html>

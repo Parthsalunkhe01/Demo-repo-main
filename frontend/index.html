@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lonere Grampanchayat – Public Issue Reporting</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+  <!-- ── HEADER ── -->
+  <header class="top-app-bar">
+    <div class="app-bar-brand">
+      <div class="app-bar-icon">
+        <span class="material-symbols-outlined">account_balance</span>
+      </div>
+      <h1 data-i18n="app_title">Public Issue Reporting</h1>
+    </div>
+    <div class="app-bar-actions">
+      <select id="language-select">
+        <option value="en">English</option>
+        <option value="mr">मराठी</option>
+      </select>
+      <a href="login.html" class="btn-primary" id="login-btn" style="padding:8px 18px; font-size:.8125rem;">
+        <span class="material-symbols-outlined" style="font-size:18px;">login</span>
+        <span data-i18n="sign_in">Sign In</span>
+      </a>
+      <button class="btn-ghost" id="logout-btn" style="display:none;">
+        <span class="material-symbols-outlined" style="font-size:18px;">logout</span>
+        <span>Log Out</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ── MAIN ── -->
+  <main class="container">
+
+    <!-- ── HERO ── -->
+    <section class="hero animate-fadeup">
+      <div class="hero-text">
+        <div class="hero-tag">
+          <span class="material-symbols-outlined" style="font-size:14px;">verified</span>
+          <span data-i18n="hero_tag">Official Grampanchayat Portal</span>
+        </div>
+        <h2 class="hero-title">
+          <span data-i18n="hero_title">Welcome to Lonere Grampanchayat Services</span>
+        </h2>
+        <p class="hero-desc" data-i18n="hero_desc">Report local civic issues, track their resolution, and stay updated with village announcements — all in one place.</p>
+        <div class="hero-actions">
+          <a href="complaint.html" class="btn-primary" id="hero-report-btn">
+            <span class="material-symbols-outlined" style="font-size:18px;">add_circle</span>
+            <span data-i18n="btn_report">Report Issue</span>
+          </a>
+          <a href="#my-complaints" class="btn-secondary" id="hero-track-btn">
+            <span class="material-symbols-outlined" style="font-size:18px;">track_changes</span>
+            <span data-i18n="btn_track">Track Complaint</span>
+          </a>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <img src="gp.jpg.jpeg" alt="Lonere Grampanchayat" class="hero-image">
+      </div>
+    </section>
+
+    <!-- ── QUICK ACTIONS ── -->
+    <div class="section-header" style="margin-top: 8px;">
+      <div class="section-title"><span data-i18n="quick_actions_title">Quick Actions</span> <span data-i18n="quick_actions_sub">What do you want to do?</span></div>
+    </div>
+    <div class="quick-grid">
+      <a href="complaint.html" class="quick-card qc-report">
+        <div class="qc-icon"><span class="material-symbols-outlined">report_problem</span></div>
+        <div class="qc-title" data-i18n="qa_report_title">Report Issue</div>
+        <div class="qc-desc" data-i18n="qa_report_desc">Submit a local civic problem</div>
+      </a>
+      <a href="#my-complaints" class="quick-card qc-track">
+        <div class="qc-icon"><span class="material-symbols-outlined">track_changes</span></div>
+        <div class="qc-title" data-i18n="qa_track_title">Track Complaint</div>
+        <div class="qc-desc" data-i18n="qa_track_desc">Check your complaint status</div>
+      </a>
+
+      <a href="data.html" class="quick-card qc-data">
+        <div class="qc-icon"><span class="material-symbols-outlined">bar_chart</span></div>
+        <div class="qc-title" data-i18n="qa_data_title">Explore Data</div>
+        <div class="qc-desc" data-i18n="qa_data_desc">View issue statistics</div>
+      </a>
+    </div>
+
+
+    <!-- ── USER SECTION ── -->
+    <section id="my-complaints" style="display:none; margin-top: 24px;">
+      <div class="section-header">
+        <div class="section-title"><span data-i18n="my_complaints">My Complaints</span> <span id="user-name-sub"></span></div>
+        <a href="complaint.html" class="btn-primary" style="padding:8px 16px;font-size:.8125rem;">
+          <span class="material-symbols-outlined" style="font-size:16px;">add</span> New
+        </a>
+      </div>
+      
+      <div id="my-complaints-list">
+        <!-- Improved cards populated by app.js -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── BOTTOM NAV ── -->
+  <nav class="bottom-nav">
+    <a href="index.html" class="nav-item active">
+      <div class="icon-container"><span class="material-symbols-outlined">home</span></div>
+      <span data-i18n="home">Home</span>
+    </a>
+    <a href="complaint.html" class="nav-item">
+      <div class="icon-container"><span class="material-symbols-outlined">report</span></div>
+      <span data-i18n="complaint_nav">Complaint</span>
+    </a>
+    <a href="announcements.html" class="nav-item">
+      <div class="icon-container"><span class="material-symbols-outlined">campaign</span></div>
+      <span data-i18n="explore_nav">Announcement</span>
+    </a>
+    <a href="data.html" class="nav-item">
+      <div class="icon-container"><span class="material-symbols-outlined">analytics</span></div>
+      <span data-i18n="data_nav">Data</span>
+    </a>
+  </nav>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (user) {
+        document.getElementById('login-btn').style.display = 'none';
+        document.getElementById('logout-btn').style.display = 'inline-flex';
+        document.getElementById('my-complaints').style.display = 'block';
+        document.getElementById('user-name-sub').textContent = 'Hello, ' + user.name;
+        loadMyComplaints();
+      }
+      document.getElementById('logout-btn').addEventListener('click', () => {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.reload();
+      });
+
+    });
+
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Public Issue Reporting</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined" rel="stylesheet">
+    <style>
+        /* ── Table ── */
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+            font-size: .875rem;
+        }
+        .admin-table th,
+        .admin-table td {
+            border-bottom: 1px solid var(--md-sys-color-outline-variant);
+            padding: 12px 16px;
+            text-align: left;
+            vertical-align: middle;
+        }
+        .admin-table th {
+            background-color: var(--md-sys-color-surface-variant);
+            color: var(--md-sys-color-on-surface-variant);
+            font-weight: 600;
+            font-size: .8125rem;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+        .admin-table tr:hover td { background-color: rgba(var(--primary-rgb, 37,99,235),.04); }
+
+        /* ── Status Select ── */
+        .status-select {
+            padding: 5px 10px;
+            border-radius: 6px;
+            border: 1.5px solid var(--md-sys-color-outline-variant);
+            font-size: .8125rem;
+            cursor: pointer;
+            background: var(--md-sys-color-surface);
+            color: var(--md-sys-color-on-surface);
+            min-width: 130px;
+        }
+        .status-select:focus { outline: none; border-color: var(--primary); }
+
+        /* ── Modal Overlay ── */
+        /* ── Modal Overlay ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            backdrop-filter: blur(8px);
+            transition: all 0.3s ease;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal-box {
+            background: #fff;
+            border-radius: 24px;
+            padding: 32px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            animation: modalIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            position: relative;
+        }
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        .modal-box h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: #1e293b;
+        }
+        .modal-box .modal-icon {
+            width: 44px; height: 44px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+            flex-shrink: 0;
+        }
+        .modal-box .modal-icon .material-symbols-outlined { color: #fff; font-size: 24px; }
+        .modal-subtitle {
+            font-size: 0.9375rem;
+            color: #64748b;
+            margin-bottom: 24px;
+            line-height: 1.5;
+            padding-left: 0;
+        }
+
+        /* ── Upload Zone ── */
+        .upload-zone {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 2px dashed #cbd5e1;
+            border-radius: 20px;
+            padding: 40px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #f8fafc;
+            margin-bottom: 24px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        .upload-zone:hover {
+            border-color: #10b981;
+            background: #f0fdf4;
+            transform: translateY(-2px);
+        }
+        .upload-zone .uz-icon {
+            width: 60px; height: 60px;
+            border-radius: 16px;
+            background: #ecfdf5;
+            color: #10b981;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 16px;
+        }
+        .upload-zone .uz-icon .material-symbols-outlined { font-size: 32px; }
+        .upload-zone p { font-weight: 600; color: #1e293b; margin-bottom: 4px; margin-top: 0; }
+        .upload-zone small { color: #64748b; font-size: 0.8125rem; }
+        #modal-proof-input { display: none; }
+
+        /* Preview & Filename */
+        #modal-proof-preview {
+            display: none;
+            width: 100%;
+            max-height: 240px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .proof-filename {
+            display: none;
+            font-size: 0.875rem;
+            color: #059669;
+            font-weight: 600;
+            margin-bottom: 20px;
+            gap: 8px;
+            align-items: center;
+            background: #ecfdf5;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+
+        /* Modal Actions */
+        .modal-actions {
+            display: flex;
+            gap: 16px;
+            margin-top: 8px;
+        }
+        .modal-actions button {
+            flex: 1;
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-cancel {
+            background: #fff;
+            border: 1px solid #e2e8f0;
+            color: #64748b;
+        }
+        .btn-cancel:hover {
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+        .btn-confirm {
+            background: #10b981;
+            border: none;
+            color: #fff;
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);
+        }
+        .btn-confirm:hover {
+            background: #059669;
+            box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3);
+            transform: translateY(-1px);
+        }
+        .btn-confirm:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .upload-err {
+            display: none;
+            font-size: 0.875rem;
+            color: #ef4444;
+            margin-bottom: 16px;
+            padding: 10px 14px;
+            background: #fef2f2;
+            border-radius: 10px;
+            border-left: 4px solid #ef4444;
+        }
+
+        /* ── Toast ── */
+        .toast-container {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: center;
+            pointer-events: none;
+        }
+        .toast {
+            padding: 12px 20px;
+            border-radius: 12px;
+            font-size: .875rem;
+            font-weight: 600;
+            color: #fff;
+            box-shadow: 0 8px 28px rgba(0,0,0,.2);
+            animation: toastIn .3s ease, toastOut .4s ease 2.6s forwards;
+            pointer-events: none;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .toast.success { background: linear-gradient(135deg, #059669, #10b981); }
+        .toast.error   { background: linear-gradient(135deg, #dc2626, #ef4444); }
+        @keyframes toastIn  { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform: translateY(0); } }
+        @keyframes toastOut { from { opacity:1; } to { opacity:0; } }
+
+        /* Completion proof badge in table */
+        .proof-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            font-size: .75rem; font-weight: 600; padding: 3px 8px;
+            border-radius: 6px; background: #d1fae5; color: #065f46;
+            text-decoration: none; cursor: pointer;
+        }
+        .proof-badge .material-symbols-outlined { font-size: 13px; }
+    </style>
+</head>
+
+<body>
+    <!-- TOAST CONTAINER -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- ── COMPLETION PROOF MODAL ── -->
+    <div class="modal-overlay" id="completion-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal-box">
+            <h3 id="modal-title">
+                <div class="modal-icon">
+                    <span class="material-symbols-outlined">verified</span>
+                </div>
+                Upload Completion Proof
+            </h3>
+            <p class="modal-subtitle">Attach a JPEG/PNG photo as proof that complaint <strong id="modal-complaint-id">#—</strong> has been resolved.</p>
+
+            <label for="modal-proof-input" class="upload-zone" id="modal-upload-zone">
+                <div class="uz-icon">
+                    <span class="material-symbols-outlined">add_photo_alternate</span>
+                </div>
+                <p>Click or drag &amp; drop</p>
+                <small>JPEG / PNG · Max 5 MB</small>
+            </label>
+            <input type="file" id="modal-proof-input" accept="image/jpeg,image/png">
+
+            <img id="modal-proof-preview" alt="Completion proof preview">
+            <div class="proof-filename" id="proof-filename">
+                <span class="material-symbols-outlined">check_circle</span>
+                <span id="proof-filename-text"></span>
+            </div>
+
+            <div class="upload-err" id="upload-err">
+                <strong>Image required!</strong> Please attach a JPEG/PNG photo as proof before confirming.
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn-cancel" id="modal-cancel-btn" type="button">Cancel</button>
+                <button class="btn-confirm" id="modal-confirm-btn" type="button">
+                    <span class="material-symbols-outlined" style="font-size:18px;">check</span>
+                    Confirm Completed
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <header class="top-app-bar">
+        <div class="app-bar-brand">
+            <div class="app-bar-icon">
+                <span class="material-symbols-outlined">shield</span>
+            </div>
+            <h1>Admin Dashboard</h1>
+        </div>
+        <div class="app-bar-actions">
+            <button class="btn-ghost" id="logout-btn">
+                <span class="material-symbols-outlined" style="font-size:18px;">logout</span>
+                <span>Log Out</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="container" style="padding-bottom: 40px;">
+        <section style="margin-bottom: 40px;">
+            <div style="background:linear-gradient(135deg,var(--primary),var(--primary-light)); border-radius:var(--r-xl); padding:22px 28px; margin-bottom:28px; color:#fff; display:flex; align-items:center; gap:16px;">
+              <div style="background:rgba(255,255,255,.18); border-radius:14px; width:50px; height:50px; display:flex; align-items:center; justify-content:center;">
+                <span class="material-symbols-outlined" style="font-size:28px;">admin_panel_settings</span>
+              </div>
+              <div>
+                <h2 style="color:#fff; font-size:1.125rem;">Complaint Management</h2>
+                <p style="color:rgba(255,255,255,.8); font-size:.875rem;">Lonere Grampanchayat · Admin View</p>
+              </div>
+            </div>
+
+            <div class="grid-2" style="margin-top: 24px; margin-bottom: 24px;">
+                <div class="md-card">
+                    <h3 style="margin-bottom: 16px;">Status Overview</h3>
+                    <canvas id="statusChart" width="400" height="200"></canvas>
+                </div>
+                <div class="md-card" style="display: flex; flex-direction: column; justify-content: center; gap: 16px;">
+                    <div style="display: flex; justify-content: space-between; padding-bottom: 8px; border-bottom: 1px solid var(--md-sys-color-outline-variant);">
+                        <span>Total Complaints</span> <strong id="stat-total">0</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding-bottom: 8px; border-bottom: 1px solid var(--md-sys-color-outline-variant); color: #E65100;">
+                        <span>Pending</span> <strong id="stat-pending">0</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding-bottom: 8px; border-bottom: 1px solid var(--md-sys-color-outline-variant); color: #1565C0;">
+                        <span>In Progress</span> <strong id="stat-inprogress">0</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding-bottom: 8px; border-bottom: 1px solid var(--md-sys-color-outline-variant); color: #2E7D32;">
+                        <span>Completed</span> <strong id="stat-completed">0</strong>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding-bottom: 8px; border-bottom: 1px solid var(--md-sys-color-outline-variant); color: #C62828;">
+                        <span>Rejected</span> <strong id="stat-rejected">0</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <h2>All Complaints Table</h2>
+            </div>
+            <div class="md-card" style="overflow-x: auto;">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>User</th>
+                            <th>Title / Category</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th>Proof</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-complaints-list">
+                        <!-- Populated via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section>
+            <h2>Post Announcement</h2>
+            <div class="md-card" style="margin-top: 16px;">
+                <form id="announcement-form">
+                    <div class="form-group">
+                        <label>Title</label>
+                        <input type="text" id="ann-title" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Message</label>
+                        <textarea id="ann-body" class="form-control" rows="3" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Image (Optional)</label>
+                        <input type="file" id="ann-image" class="form-control" accept="image/*"
+                            onchange="previewImage(event)" style="padding: 8px;">
+                        <img id="ann-image-preview"
+                            style="max-width: 100%; max-height: 200px; display: none; margin-top: 12px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    </div>
+                    <button type="submit" class="btn-primary">Post Announcement</button>
+                </form>
+            </div>
+        </section>
+
+        <section style="margin-top: 40px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <h2>All Announcements Table</h2>
+            </div>
+            <div class="md-card" style="overflow-x: auto;">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Title</th>
+                            <th>Date</th>
+                            <th>Image</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-announcements-list">
+                        <!-- Populated via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        let statusChartInstance = null;
+
+        // ── Auth guard ──────────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            const user = JSON.parse(localStorage.getItem('user'));
+            if (!user || user.role !== 'admin') {
+                showToast('Unauthorized access.', 'error');
+                setTimeout(() => window.location.href = 'index.html', 1500);
+                return;
+            }
+            loadAllComplaints();
+            loadAllAnnouncements();
+
+            document.getElementById('logout-btn').addEventListener('click', () => {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = 'index.html';
+            });
+        });
+
+        // ── Toast ───────────────────────────────────────────────────────────────
+        function showToast(msg, type = 'success') {
+            const tc = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const icon = type === 'success' ? 'check_circle' : 'error';
+            toast.className = `toast ${type}`;
+            toast.innerHTML = `<span class="material-symbols-outlined" style="font-size:18px;">${icon}</span>${msg}`;
+            tc.appendChild(toast);
+            setTimeout(() => toast.remove(), 3100);
+        }
+
+        // ── Load All Complaints ─────────────────────────────────────────────────
+        async function loadAllComplaints() {
+            try {
+                const response = await fetch('/api/complaints/all', {
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+                });
+                const complaints = await response.json();
+
+                let pending = 0, inprogress = 0, completed = 0, rejected = 0;
+
+                const tbody = document.getElementById('admin-complaints-list');
+                tbody.innerHTML = '';
+
+                complaints.forEach(c => {
+                    if (c.status === 'Pending')     { pending++;    }
+                    if (c.status === 'In Progress') { inprogress++; }
+                    if (c.status === 'Completed')   { completed++;  }
+                    if (c.status === 'Rejected')    { rejected++;   }
+
+                    // Proof image cell
+                    let proofCell = '<span style="color:#9ca3af;font-size:.8rem;">—</span>';
+                    if (c.completion_image_url) {
+                        proofCell = `<a href="${c.completion_image_url}" target="_blank" class="proof-badge">
+                            <span class="material-symbols-outlined">image</span> View Proof
+                          </a>`;
+                    }
+
+                    // Complaint image cell
+                    let imgBtn = c.image_url
+                        ? `<a href="${c.image_url}" target="_blank" class="btn-secondary" style="padding:4px 10px;font-size:11px;">Issue Photo</a>`
+                        : '';
+
+                    tbody.innerHTML += `
+            <tr>
+              <td><strong>#${c.id}</strong></td>
+              <td>${c.user_name}<br><small style="color:#6b7280;">${c.user_email}</small></td>
+              <td><strong>${c.title}</strong><br><small style="color:#6b7280;">${c.category}</small></td>
+              <td>${c.location}</td>
+              <td>
+                <select id="status-select-${c.id}"
+                        onchange="handleStatusChange('${c.id}', this)"
+                        class="status-select">
+                  <option value="Pending"     ${c.status === 'Pending'     ? 'selected' : ''}>Pending</option>
+                  <option value="In Progress" ${c.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                  <option value="Completed"   ${c.status === 'Completed'   ? 'selected' : ''}>Completed</option>
+                  <option value="Rejected"    ${c.status === 'Rejected'    ? 'selected' : ''}>Rejected</option>
+                </select>
+              </td>
+              <td>${proofCell}</td>
+              <td>
+                <div style="display: flex; gap: 8px;">
+                  <a href="${c.image_url ? '' + c.image_url : '#'}" target="_blank" class="btn-secondary" style="padding: 4px 12px; font-size: 12px;">View Image</a>
+                  <button onclick="deleteComplaint('${c.id}')" style="padding: 4px 12px; font-size: 12px; background-color: #C62828; color: white; border: none; border-radius: 4px; cursor: pointer;">Delete</button>
+                </div>
+              </td>
+            </tr>`;
+                });
+
+                document.getElementById('stat-total').textContent = complaints.length;
+                document.getElementById('stat-pending').textContent = pending;
+                document.getElementById('stat-inprogress').textContent = inprogress;
+                document.getElementById('stat-completed').textContent = completed;
+                document.getElementById('stat-rejected').textContent = rejected;
+
+                updateChart(pending, inprogress, completed, rejected);
+
+            } catch (error) {
+                console.error(error);
+                showToast('Failed to load complaints', 'error');
+            }
+        }
+
+        // ── Chart ───────────────────────────────────────────────────────────────
+        function updateChart(pending, inprogress, completed, rejected) {
+            const ctx = document.getElementById('statusChart').getContext('2d');
+            if (statusChartInstance) statusChartInstance.destroy();
+            statusChartInstance = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Pending', 'In Progress', 'Completed', 'Rejected'],
+                    datasets: [{
+                        data: [pending, inprogress, completed, rejected],
+                        backgroundColor: ['#FF9800', '#2196F3', '#4CAF50', '#F44336']
+                    }]
+                }
+            });
+        }
+
+        // ── Modal Logic ─────────────────────────────────────────────────────────
+        let selectedComplaintId = null;
+        const modal = document.getElementById('completion-modal');
+        const modalIdText = document.getElementById('modal-complaint-id');
+        const modalInput = document.getElementById('modal-proof-input');
+        const modalPreview = document.getElementById('modal-proof-preview');
+        const modalFilename = document.getElementById('proof-filename');
+        const modalFilenameText = document.getElementById('proof-filename-text');
+        const modalError = document.getElementById('upload-err');
+        const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+        const modalCancelBtn = document.getElementById('modal-cancel-btn');
+
+        modalCancelBtn.onclick = () => {
+            modal.classList.remove('open');
+            loadAllComplaints(); 
+        };
+
+        modalInput.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                modalPreview.src = URL.createObjectURL(file);
+                modalPreview.style.display = 'block';
+                modalFilename.style.display = 'flex';
+                modalFilenameText.textContent = file.name;
+                modalError.style.display = 'none';
+            }
+        };
+
+        modalConfirmBtn.onclick = async () => {
+            const file = modalInput.files[0];
+            if (!file) {
+                modalError.style.display = 'block';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('status', 'Completed');
+            formData.append('proof', file);
+
+            try {
+                modalConfirmBtn.disabled = true;
+                modalConfirmBtn.innerHTML = '<span class="material-symbols-outlined" style="animation:spin 1s linear infinite">sync</span> Processing...';
+                
+                const res = await fetch(`/api/complaints/${selectedComplaintId}/status`, {
+                    method: 'PATCH',
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') },
+                    body: formData
+                });
+
+                if (res.ok) {
+                    showToast('✅ Complaint marked as Completed!', 'success');
+                    modal.classList.remove('open');
+                    loadAllComplaints();
+                } else {
+                    const data = await res.json();
+                    showToast(data.message || 'Update failed', 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Network error', 'error');
+            } finally {
+                modalConfirmBtn.disabled = false;
+                modalConfirmBtn.innerHTML = '<span class="material-symbols-outlined" style="font-size:18px;">check</span> Confirm Completed';
+            }
+        };
+
+        // ── Handle Status Change ────────────────────────────────────────────────
+        function handleStatusChange(id, selectElement) {
+            const newStatus = selectElement.value;
+            updateStatus(id, newStatus);
+        }
+
+        async function updateStatus(id, newStatus) {
+            if (newStatus === 'Completed') {
+                selectedComplaintId = id;
+                modalIdText.textContent = '#' + id;
+                modalPreview.style.display = 'none';
+                modalFilename.style.display = 'none';
+                modalInput.value = '';
+                modalError.style.display = 'none';
+                modal.classList.add('open');
+                return;
+            }
+
+            if (!confirm('Change status to ' + newStatus + '?')) return loadAllComplaints();
+
+            try {
+                const res = await fetch(`/api/complaints/${id}/status`, {
+                    method: 'PATCH',
+                    headers: { 
+                        'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: newStatus })
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    showToast(newStatus === 'Completed'
+                        ? '✅ Marked as Completed with proof!'
+                        : 'Status updated to ' + newStatus, 'success');
+                    loadAllComplaints();
+                    return true;
+                } else {
+                    showToast(data.message || 'Failed to update status', 'error');
+                    loadAllComplaints();
+                    return false;
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Network error. Please try again.', 'error');
+                loadAllComplaints();
+                return false;
+            }
+        }
+
+        // ── Delete Complaint ────────────────────────────────────────────────────
+        async function deleteComplaint(id) {
+            if (!confirm('Are you sure you want to delete this complaint?')) return;
+            try {
+                const res = await fetch(`/api/complaints/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+                });
+                if (res.ok) {
+                    showToast('Complaint deleted', 'success');
+                    loadAllComplaints();
+                } else {
+                    showToast('Failed to delete complaint', 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Network error', 'error');
+            }
+        }
+
+        // ── Load Announcements ──────────────────────────────────────────────────
+        async function loadAllAnnouncements() {
+            try {
+                const response = await fetch('/api/announcements');
+                const announcements = await response.json();
+                const tbody = document.getElementById('admin-announcements-list');
+                tbody.innerHTML = '';
+                announcements.forEach(a => {
+                    const date = new Date(a.created_at).toLocaleDateString();
+                    tbody.innerHTML += `
+            <tr>
+              <td>#${a.id}</td>
+              <td><strong>${a.title}</strong></td>
+              <td>${date}</td>
+              <td>
+                ${a.media_url ? `<a href="${a.media_url}" target="_blank" class="btn-secondary" style="padding: 4px 12px; font-size: 12px;">View Image</a>` : 'No Image'}
+              </td>
+              <td>
+                <button onclick="deleteAnnouncementAdmin('${a.id}')" style="padding:4px 12px;font-size:12px;background:#C62828;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Delete</button>
+              </td>
+            </tr>`;
+                });
+            } catch (err) {
+                console.error('Error loading announcements:', err);
+            }
+        }
+
+        async function deleteAnnouncementAdmin(id) {
+            if (!confirm('Are you sure you want to delete this announcement?')) return;
+            try {
+                const res = await fetch(`/api/announcements/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+                });
+                if (res.ok) {
+                    showToast('Announcement deleted', 'success');
+                    loadAllAnnouncements();
+                } else {
+                    showToast('Failed to delete announcement', 'error');
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        // ── Announcement image preview ──────────────────────────────────────────
+        function previewImage(event) {
+            const preview = document.getElementById('ann-image-preview');
+            const file = event.target.files[0];
+            if (file) {
+                preview.src = URL.createObjectURL(file);
+                preview.style.display = 'block';
+            } else {
+                preview.src = '';
+                preview.style.display = 'none';
+            }
+        }
+
+        document.getElementById('announcement-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const title = document.getElementById('ann-title').value;
+            const body = document.getElementById('ann-body').value;
+            const imageFile = document.getElementById('ann-image').files[0];
+
+            try {
+                const formData = new FormData();
+                formData.append('title', title);
+                formData.append('body', body);
+                if (imageFile) {
+                    formData.append('media', imageFile);
+                    formData.append('type', 'image');
+                } else {
+                    formData.append('type', 'text');
+                }
+
+                const res = await fetch('/api/announcements', {
+                    method: 'POST',
+                    headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') },
+                    body: formData
+                });
+
+                if (res.ok) {
+                    showToast('Announcement posted!', 'success');
+                    e.target.reset();
+                    document.getElementById('ann-image-preview').style.display = 'none';
+                    loadAllAnnouncements();
+                } else {
+                    showToast('Failed to post announcement', 'error');
+                }
+            } catch (err) {
+                showToast('Error posting announcement', 'error');
+            }
+        });
+
+        /* Spin animation for loading indicator */
+        const style = document.createElement('style');
+        style.textContent = `@keyframes spin { to { transform: rotate(360deg); } }`;
+        document.head.appendChild(style);
+    </script>
+</body>
+
+</html>

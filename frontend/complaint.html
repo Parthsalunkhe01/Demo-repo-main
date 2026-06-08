@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Raise Complaint – Lonere Grampanchayat</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Symbols+Outlined" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .step-label {
+      display:flex; align-items:center; gap:10px;
+      font-size:.8125rem; font-weight:700; color:var(--text-2);
+      text-transform:uppercase; letter-spacing:.04em;
+      margin-bottom:16px; padding-bottom:10px;
+      border-bottom:1px solid var(--border);
+    }
+    .step-num {
+      width:26px; height:26px; border-radius:50%;
+      background:linear-gradient(135deg, var(--primary), var(--primary-light));
+      color:#fff; display:flex; align-items:center; justify-content:center;
+      font-size:.75rem; font-weight:800; flex-shrink:0;
+    }
+    .success-banner {
+      display:none; text-align:center; padding:40px 24px;
+    }
+    .success-banner .checkmark {
+      width:72px; height:72px; border-radius:50%;
+      background:linear-gradient(135deg,#059669,#34D399);
+      display:flex; align-items:center; justify-content:center;
+      margin:0 auto 16px;
+      box-shadow:0 6px 20px rgba(5,150,105,.30);
+    }
+    .success-banner .checkmark .material-symbols-outlined { color:#fff; font-size:40px; }
+    .success-banner h3 { font-size:1.5rem; font-weight:800; margin-bottom:8px; }
+    .success-banner p  { color:var(--text-2); margin-bottom:24px; }
+    .inline-err { font-size:.775rem; color:var(--rose); margin-top:4px; display:none; }
+    .form-control.error { border-color:var(--rose); }
+  </style>
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <header class="top-app-bar">
+    <div class="app-bar-brand">
+      <a href="index.html" style="display:flex;align-items:center;color:var(--text-2);margin-right:4px;">
+        <span class="material-symbols-outlined">arrow_back</span>
+      </a>
+      <div class="app-bar-icon">
+        <span class="material-symbols-outlined">report_problem</span>
+      </div>
+      <h1 data-i18n="raise_complaint">Raise Complaint</h1>
+    </div>
+    <div class="app-bar-actions">
+      <select id="language-select">
+        <option value="en">English</option>
+        <option value="mr">मराठी</option>
+      </select>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- Page Banner -->
+    <div style="background:linear-gradient(135deg,var(--primary),var(--primary-light)); border-radius:var(--r-xl); padding:24px 28px; margin-bottom:24px; color:#fff; display:flex; align-items:center; gap:16px;" class="animate-fadeup">
+      <div style="background:rgba(255,255,255,.18); border-radius:14px; width:52px; height:52px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+        <span class="material-symbols-outlined" style="font-size:30px;">report_problem</span>
+      </div>
+      <div>
+        <h2 style="color:#fff; font-size:1.125rem; margin-bottom:2px;" data-i18n="banner_title">Report a Civic Issue</h2>
+        <p style="color:rgba(255,255,255,.8); font-size:.875rem;" data-i18n="banner_desc">Fill in the details below and we'll ensure it's addressed promptly.</p>
+      </div>
+    </div>
+
+    <!-- Form Card -->
+    <div class="md-card animate-fadeup" style="max-width:640px; margin:0 auto; padding:28px 28px;" id="form-card">
+
+      <!-- Success State -->
+      <div class="success-banner" id="success-banner">
+        <div class="checkmark"><span class="material-symbols-outlined">check</span></div>
+        <h3 data-i18n="success_title">Complaint Submitted!</h3>
+        <p data-i18n="success_desc">Your complaint has been recorded. You'll be able to track it from your profile.</p>
+        <a href="index.html" class="btn-primary" data-i18n="btn_go_home">Go to Home</a>
+      </div>
+
+      <!-- Form -->
+      <form id="complaint-form">
+
+        <!-- Section 1: Basic Info -->
+        <div class="step-label">
+          <div class="step-num">1</div>
+          <span data-i18n="step1_label">Basic Information</span>
+        </div>
+        <div class="form-group">
+          <label for="title" data-i18n="lbl_issue_name">Issue Name</label>
+          <input type="text" id="title" class="form-control" required placeholder="e.g. Pothole on main road" data-i18n-placeholder="ph_issue_name">
+          <span class="inline-err" id="err-title">Please enter an issue name.</span>
+        </div>
+        <div class="form-group">
+          <label for="category" data-i18n="lbl_category">Category</label>
+          <select id="category" class="form-control" required>
+            <option value="">— Select a Category —</option>
+            <option value="Cleanliness">🧹 Cleanliness</option>
+            <option value="Roads">🛣️ Roads & Potholes</option>
+            <option value="Water Supply">💧 Water Supply</option>
+            <option value="Drainage">🚿 Drainage</option>
+            <option value="Street Lights">💡 Street Lights</option>
+            <option value="Food Safety">🍽️ Food Safety</option>
+            <option value="Public Gardens">🌳 Public Gardens</option>
+            <option value="Other">📌 Other</option>
+          </select>
+          <span class="inline-err" id="err-category">Please select a category.</span>
+        </div>
+
+        <!-- Section 2: Location -->
+        <div class="step-label">
+          <div class="step-num">2</div>
+          <span data-i18n="step2_label">Location Details</span>
+        </div>
+        <div class="form-group">
+          <label for="location" data-i18n="lbl_location">Address / Location</label>
+          <div class="input-icon-wrap">
+            <span class="material-symbols-outlined inp-icon">location_on</span>
+            <input type="text" id="location" class="form-control" required placeholder="Enter exact street/locality" data-i18n-placeholder="ph_location">
+          </div>
+          <span class="inline-err" id="err-location">Please enter a location.</span>
+        </div>
+
+        <!-- Section 3: Description -->
+        <div class="step-label">
+          <div class="step-num">3</div>
+          <span data-i18n="step3_label">Description</span>
+        </div>
+        <div class="form-group">
+          <label for="description" data-i18n="lbl_description">Describe the Issue</label>
+          <textarea id="description" class="form-control" rows="4" required placeholder="Provide clear details: what is the problem, how long has it existed, who is affected…" data-i18n-placeholder="ph_description"></textarea>
+          <span class="inline-err" id="err-description">Please provide a description.</span>
+        </div>
+
+        <!-- Section 4: Upload -->
+        <div class="step-label">
+          <div class="step-num">4</div>
+          <span data-i18n="step4_label">Attach Photo (Optional)</span>
+        </div>
+        <div class="form-group" style="margin-bottom:8px;">
+          <label for="image" class="upload-box" id="upload-box" style="cursor:pointer;">
+            <span class="material-symbols-outlined">upload_file</span>
+            <p>Click or drag & drop to upload<br><strong>image file</strong></p>
+          </label>
+          <input type="file" id="image" accept="image/*" style="display:none;" onchange="handlePreview(this)">
+          <img id="img-preview" src="" alt="Preview">
+        </div>
+
+        <!-- Submit -->
+        <button type="submit" class="btn-primary" id="submit-btn" style="width:100%; padding:14px; font-size:1rem; margin-top:8px;">
+          <span class="material-symbols-outlined" style="font-size:20px;">send</span>
+          <span id="submit-label" data-i18n="btn_submit">Submit Complaint</span>
+        </button>
+
+      </form>
+    </div>
+
+  </main>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <a href="index.html" class="nav-item">
+      <div class="icon-container"><span class="material-symbols-outlined">home</span></div>
+      <span data-i18n="home">Home</span>
+    </a>
+    <a href="complaint.html" class="nav-item active">
+      <div class="icon-container"><span class="material-symbols-outlined">report</span></div>
+      <span data-i18n="complaint_nav">Complaint</span>
+    </a>
+    <a href="announcements.html" class="nav-item">
+      <div class="icon-container"><span class="material-symbols-outlined">campaign</span></div>
+      <span data-i18n="explore_nav">Announcement</span>
+    </a>
+    <a href="data.html" class="nav-item">
+      <div class="icon-container"><span class="material-symbols-outlined">analytics</span></div>
+      <span data-i18n="data_nav">Data</span>
+    </a>
+  </nav>
+
+  <script src="js/i18n.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!localStorage.getItem('token')) {
+        alert('You must be signed in to raise a complaint.');
+        window.location.href = 'login.html';
+      }
+    });
+
+    /* Image preview */
+    function handlePreview(input) {
+      const preview = document.getElementById('img-preview');
+      const file = input.files[0];
+      if (file) {
+        preview.src = URL.createObjectURL(file);
+        preview.style.display = 'block';
+        document.getElementById('upload-box').style.borderColor = 'var(--primary)';
+      }
+    }
+
+    /* Drag & drop */
+    const uploadBox = document.getElementById('upload-box');
+    uploadBox.addEventListener('dragover', e => { e.preventDefault(); uploadBox.style.background='var(--primary-soft)'; uploadBox.style.borderColor='var(--primary)'; });
+    uploadBox.addEventListener('dragleave', () => { uploadBox.style.background=''; uploadBox.style.borderColor=''; });
+    uploadBox.addEventListener('drop', e => {
+      e.preventDefault();
+      const input = document.getElementById('image');
+      input.files = e.dataTransfer.files;
+      handlePreview(input);
+    });
+
+    /* Validation helper */
+    function validate(id, errId) {
+      const el = document.getElementById(id);
+      const err = document.getElementById(errId);
+      const ok = el.value.trim() !== '';
+      el.classList.toggle('error', !ok);
+      if (err) err.style.display = ok ? 'none' : 'block';
+      return ok;
+    }
+
+    /* Submit */
+    document.getElementById('complaint-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const v1 = validate('title','err-title');
+      const v2 = validate('category','err-category');
+      const v3 = validate('location','err-location');
+      const v4 = validate('description','err-description');
+      if (!v1||!v2||!v3||!v4) return;
+
+      const btn = document.getElementById('submit-btn');
+      const lbl = document.getElementById('submit-label');
+      lbl.textContent = 'Submitting…';
+      btn.disabled = true;
+      btn.insertAdjacentHTML('afterbegin', '<span class="loader"></span>');
+
+      const token = localStorage.getItem('token');
+      const formData = new FormData();
+      formData.append('title',       document.getElementById('title').value);
+      formData.append('category',    document.getElementById('category').value);
+      formData.append('location',    document.getElementById('location').value);
+      formData.append('description', document.getElementById('description').value);
+      const img = document.getElementById('image').files[0];
+      if (img) formData.append('image', img);
+
+      try {
+        const res = await fetch('/api/complaints', {
+          method:'POST',
+          headers:{ 'Authorization':'Bearer '+token },
+          body: formData
+        });
+        const data = await res.json();
+        if (res.ok) {
+          document.getElementById('complaint-form').style.display = 'none';
+          document.getElementById('success-banner').style.display = 'block';
+          document.querySelectorAll('.step-label').forEach(el=>el.style.display='none');
+        } else {
+          alert('Failed to submit: ' + data.message);
+          lbl.textContent = 'Submit Complaint';
+          btn.disabled = false;
+          btn.querySelector('.loader')?.remove();
+        }
+      } catch(err) {
+        alert('Server error.');
+        lbl.textContent = 'Submit Complaint';
+        btn.disabled = false;
+        btn.querySelector('.loader')?.remove();
+      }
+    });
+  </script>
+</body>
+</html>
