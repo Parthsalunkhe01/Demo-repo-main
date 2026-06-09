@@ -31,7 +31,7 @@ app.use('/api/announcements', announcementRoutes);
 
 // Catch-all route to serve index.html for any frontend routes
 app.get('*', (req, res, next) => {
-    if (req.url.startsWith('/api')) return next();
+    if (req.url.startsWith('/api') || req.url.startsWith('/uploads')) return next();
     res.sendFile(path.join(__dirname, '../frontend/index.html'));
 });
 
