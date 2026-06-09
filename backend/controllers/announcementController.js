@@ -1,5 +1,13 @@
 const { Announcement } = require('../config/db');
 
+function formatId(idObj, prefix) {
+    const str = idObj.toString();
+    const timestamp = parseInt(str.substring(0, 8), 16) * 1000;
+    const year = new Date(timestamp).getFullYear();
+    const shortCounter = str.slice(-4).toUpperCase();
+    return `${prefix}-${year}-${shortCounter}`;
+}
+
 exports.createAnnouncement = async (req, res) => {
     try {
         const { title, body, type } = req.body;
@@ -37,7 +45,11 @@ exports.getAllAnnouncements = async (req, res) => {
             .sort({ created_at: -1 })
             .lean();
 
-        const mapped = announcements.map(a => ({ ...a, id: a._id }));
+        const mapped = announcements.map(a => ({ 
+            ...a, 
+            id: a._id,
+            display_id: formatId(a._id, 'ANN')
+        }));
         res.json(mapped);
     } catch (err) {
         res.status(500).json({ message: err.message });

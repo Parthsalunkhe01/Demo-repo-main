@@ -1,5 +1,13 @@
 const { Complaint } = require('../config/db');
 
+function formatId(idObj, prefix) {
+    const str = idObj.toString();
+    const timestamp = parseInt(str.substring(0, 8), 16) * 1000;
+    const year = new Date(timestamp).getFullYear();
+    const shortCounter = str.slice(-4).toUpperCase();
+    return `${prefix}-${year}-${shortCounter}`;
+}
+
 // CREATE
 exports.createComplaint = async (req, res) => {
     try {
@@ -39,10 +47,10 @@ exports.getAllComplaints = async (req, res) => {
             .sort({ created_at: -1 })
             .lean();
 
-        // Map populated fields to match old SQLite response shape
         const mapped = complaints.map(c => ({
             ...c,
             id: c._id,
+            display_id: formatId(c._id, 'COMP'),
             user_name:  c.user_id ? c.user_id.name  : null,
             user_email: c.user_id ? c.user_id.email : null,
             user_id:    c.user_id ? c.user_id._id   : null,
@@ -64,7 +72,11 @@ exports.getMyComplaints = async (req, res) => {
             .sort({ created_at: -1 })
             .lean();
 
-        const mapped = complaints.map(c => ({ ...c, id: c._id }));
+        const mapped = complaints.map(c => ({ 
+            ...c, 
+            id: c._id,
+            display_id: formatId(c._id, 'COMP')
+        }));
         res.json(mapped);
     } catch (err) {
         console.error('❌ FETCH MY ERROR:', err);

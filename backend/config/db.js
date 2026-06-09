@@ -51,7 +51,7 @@ const connectDB = async () => {
     // Seed default admin account if not exists (password: admin123)
     const existing = await User.findOne({ email: 'admin@lonere.gov' });
     if (!existing) {
-      const hash = bcrypt.hashSync('admin123', 10);
+      const hash = bcrypt.hashSync('Alonere#$#2026', 10);
       await User.create({ name: 'Admin', email: 'admin@lonere.gov', password_hash: hash, role: 'admin' });
       console.log('✅ Default admin created: admin@lonere.gov / admin123');
     }

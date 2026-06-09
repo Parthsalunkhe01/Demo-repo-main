@@ -454,6 +454,15 @@
             setTimeout(() => toast.remove(), 3100);
         }
 
+        // ── Helper: Format MongoDB ObjectId to simple string ────────────────────
+        function formatId(hexString, prefix) {
+            if (!hexString || hexString.length !== 24) return prefix + '-' + hexString;
+            const timestamp = parseInt(hexString.substring(0, 8), 16) * 1000;
+            const year = new Date(timestamp).getFullYear();
+            const shortCounter = hexString.slice(-4).toUpperCase();
+            return `${prefix}-${year}-${shortCounter}`;
+        }
+
         // ── Load All Complaints ─────────────────────────────────────────────────
         async function loadAllComplaints() {
             try {
@@ -488,13 +497,13 @@
 
                     tbody.innerHTML += `
             <tr>
-              <td><strong>#${c.id}</strong></td>
+              <td title="${c.id}"><strong>${formatId(c.id, 'COMP')}</strong></td>
               <td>${c.user_name}<br><small style="color:#6b7280;">${c.user_email}</small></td>
               <td><strong>${c.title}</strong><br><small style="color:#6b7280;">${c.category}</small></td>
               <td>${c.location}</td>
               <td>
                 <select id="status-select-${c.id}"
-                        onchange="handleStatusChange('${c.id}', this)"
+                        onchange="handleStatusChange('${c.id}', this, '${formatId(c.id, 'COMP')}')"
                         class="status-select">
                   <option value="Pending"     ${c.status === 'Pending'     ? 'selected' : ''}>Pending</option>
                   <option value="In Progress" ${c.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
@@ -504,8 +513,8 @@
               </td>
               <td>${proofCell}</td>
               <td>
-                <div style="display: flex; gap: 8px;">
-                  <a href="${c.image_url ? '' + c.image_url : '#'}" target="_blank" class="btn-secondary" style="padding: 4px 12px; font-size: 12px;">View Image</a>
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                  ${c.image_url ? `<a href="${c.image_url}" target="_blank" style="display: block; width: 32px; height: 32px; flex-shrink: 0;"><img src="${c.image_url}" alt="Issue Photo" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></a>` : '<span style="font-size: 12px; color: #9ca3af; min-width: 50px;">No Image</span>'}
                   <button onclick="deleteComplaint('${c.id}')" style="padding: 4px 12px; font-size: 12px; background-color: #C62828; color: white; border: none; border-radius: 4px; cursor: pointer;">Delete</button>
                 </div>
               </td>
@@ -609,15 +618,15 @@
         };
 
         // ── Handle Status Change ────────────────────────────────────────────────
-        function handleStatusChange(id, selectElement) {
+        function handleStatusChange(id, selectElement, displayId) {
             const newStatus = selectElement.value;
-            updateStatus(id, newStatus);
+            updateStatus(id, newStatus, displayId);
         }
 
-        async function updateStatus(id, newStatus) {
+        async function updateStatus(id, newStatus, displayId) {
             if (newStatus === 'Completed') {
                 selectedComplaintId = id;
-                modalIdText.textContent = '#' + id;
+                modalIdText.textContent = displayId || ('#' + id);
                 modalPreview.style.display = 'none';
                 modalFilename.style.display = 'none';
                 modalInput.value = '';
@@ -689,11 +698,11 @@
                     const date = new Date(a.created_at).toLocaleDateString();
                     tbody.innerHTML += `
             <tr>
-              <td>#${a.id}</td>
+              <td title="${a.id}">${formatId(a.id, 'ANN')}</td>
               <td><strong>${a.title}</strong></td>
               <td>${date}</td>
               <td>
-                ${a.media_url ? `<a href="${a.media_url}" target="_blank" class="btn-secondary" style="padding: 4px 12px; font-size: 12px;">View Image</a>` : 'No Image'}
+                ${a.media_url ? `<a href="${a.media_url}" target="_blank" style="display: inline-block; width: 32px; height: 32px;"><img src="${a.media_url}" alt="Announcement Image" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);"></a>` : '<span style="font-size: 12px; color: #9ca3af;">No Image</span>'}
               </td>
               <td>
                 <button onclick="deleteAnnouncementAdmin('${a.id}')" style="padding:4px 12px;font-size:12px;background:#C62828;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Delete</button>
